@@ -1,0 +1,698 @@
+<!DOCTYPE html>
+<html lang="en" class="h-full bg-slate-900">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Lhastral - Crystal Collection Manager</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- FontAwesome Icons -->
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    colors: {
+                        brand: {
+                            50: '#f4f5ff',
+                            100: '#ebeeff',
+                            200: '#d9ddff',
+                            300: '#babe25',
+                            400: '#938eff',
+                            500: '#705af8',
+                            600: '#5b32ee',
+                            700: '#4c23d4',
+                            800: '#3e1cb3',
+                            900: '#34198f',
+                            950: '#1e0d61',
+                        },
+                        amber: {
+                            500: '#f59e0b',
+                        }
+                    },
+                    fontFamily: {
+                        sans: ['Plus Jakarta Sans', 'sans-serif'],
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        body { font-family: 'Plus Jakarta Sans', sans-serif; }
+        /* Custom scrollbars */
+        ::-webkit-scrollbar { width: 6px; height: 6px; }
+        ::-webkit-scrollbar-track { background: rgba(15, 23, 42, 0.6); }
+        ::-webkit-scrollbar-thumb { background: rgba(51, 65, 85, 0.8); border-radius: 4px; }
+        ::-webkit-scrollbar-thumb:hover { background: rgba(100, 116, 139, 1); }
+    </style>
+</head>
+<body class="bg-slate-950 text-slate-100 min-h-full flex flex-col antialiased selection:bg-indigo-500 selection:text-white">
+
+    <!-- Navigation Header -->
+    <header class="bg-slate-900/80 border-b border-slate-800 backdrop-blur-md sticky top-0 z-30">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-3.5">
+            <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                
+                <!-- Brand Identity -->
+                <div class="flex items-center space-x-3.5">
+                    <div class="bg-gradient-to-tr from-indigo-600 via-indigo-500 to-purple-500 text-white p-2.5 rounded-xl shadow-lg shadow-indigo-500/20 ring-1 ring-white/20">
+                        <i class="fa-solid fa-gem text-xl"></i>
+                    </div>
+                    <div>
+                        <div class="flex items-center gap-2">
+                            <h1 class="text-xl font-bold tracking-tight text-white uppercase">LHASTRAL</h1>
+                            <span class="bg-indigo-500/10 text-indigo-400 border border-indigo-500/30 text-[10px] font-bold px-2 py-0.5 rounded-full uppercase tracking-wider">GitHub Pages Ready</span>
+                        </div>
+                        <p class="text-xs text-slate-400 font-medium tracking-wide">Genuine Crystals Collection & Inventory System</p>
+                    </div>
+                </div>
+
+                <!-- Global Action Bar -->
+                <div class="flex items-center flex-wrap gap-2.5">
+                    <button onclick="exportJSON()" title="Export JSON Backup" class="bg-slate-800 hover:bg-slate-700 text-slate-200 border border-slate-700/80 font-medium px-3 py-1.5 rounded-lg text-xs flex items-center gap-2 transition-all">
+                        <i class="fa-solid fa-download text-indigo-400"></i> Export JSON
+                    </button>
+                    <button onclick="exportCSV()" title="Export CSV Spreadsheet" class="bg-slate-800 hover:bg-slate-700 text-slate-200 border border-slate-700/80 font-medium px-3 py-1.5 rounded-lg text-xs flex items-center gap-2 transition-all">
+                        <i class="fa-solid fa-file-csv text-emerald-400"></i> Export CSV
+                    </button>
+                    <label class="bg-slate-800 hover:bg-slate-700 text-slate-200 border border-slate-700/80 font-medium px-3 py-1.5 rounded-lg text-xs flex items-center gap-2 cursor-pointer transition-all">
+                        <i class="fa-solid fa-upload text-amber-400"></i> Import JSON
+                        <input type="file" id="importFileInput" accept=".json" class="hidden" onchange="importJSON(event)">
+                    </label>
+                    <button onclick="openAddModal()" class="bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-500 hover:to-purple-500 text-white font-semibold px-4 py-1.5 rounded-lg text-xs flex items-center gap-2 transition-all shadow-md shadow-indigo-600/30">
+                        <i class="fa-solid fa-plus"></i> Add Crystal
+                    </button>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <!-- Main Dashboard Container -->
+    <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 w-full flex-grow space-y-6">
+
+        <!-- Executive Analytics Metrics -->
+        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+            <!-- Metric 1: Total SKUs -->
+            <div class="bg-slate-900/60 border border-slate-800/80 rounded-2xl p-4 flex items-center justify-between shadow-sm">
+                <div>
+                    <p class="text-xs font-medium text-slate-400 uppercase tracking-wider">Total SKUs / Types</p>
+                    <p id="metric-skus" class="text-2xl font-bold text-white mt-1">0</p>
+                </div>
+                <div class="p-3 bg-indigo-500/10 border border-indigo-500/20 text-indigo-400 rounded-xl">
+                    <i class="fa-solid fa-cubes text-xl"></i>
+                </div>
+            </div>
+
+            <!-- Metric 2: Total Units in Stock -->
+            <div class="bg-slate-900/60 border border-slate-800/80 rounded-2xl p-4 flex items-center justify-between shadow-sm">
+                <div>
+                    <p class="text-xs font-medium text-slate-400 uppercase tracking-wider">Total Stock Units</p>
+                    <p id="metric-total-stock" class="text-2xl font-bold text-white mt-1">0</p>
+                </div>
+                <div class="p-3 bg-purple-500/10 border border-purple-500/20 text-purple-400 rounded-xl">
+                    <i class="fa-solid fa-boxes-stacked text-xl"></i>
+                </div>
+            </div>
+
+            <!-- Metric 3: Total Portfolio Value -->
+            <div class="bg-slate-900/60 border border-slate-800/80 rounded-2xl p-4 flex items-center justify-between shadow-sm">
+                <div>
+                    <p class="text-xs font-medium text-slate-400 uppercase tracking-wider">Inventory Value</p>
+                    <p id="metric-total-value" class="text-2xl font-bold text-emerald-400 mt-1">$0.00</p>
+                </div>
+                <div class="p-3 bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 rounded-xl">
+                    <i class="fa-solid fa-sack-dollar text-xl"></i>
+                </div>
+            </div>
+
+            <!-- Metric 4: Low Stock Alerts -->
+            <div class="bg-slate-900/60 border border-slate-800/80 rounded-2xl p-4 flex items-center justify-between shadow-sm">
+                <div>
+                    <p class="text-xs font-medium text-slate-400 uppercase tracking-wider">Low Stock Alerts</p>
+                    <p id="metric-low-stock" class="text-2xl font-bold text-amber-400 mt-1">0</p>
+                </div>
+                <div class="p-3 bg-amber-500/10 border border-amber-500/20 text-amber-400 rounded-xl">
+                    <i class="fa-solid fa-triangle-exclamation text-xl"></i>
+                </div>
+            </div>
+        </div>
+
+        <!-- Search, Filter & Quick Reset Controls -->
+        <div class="bg-slate-900/80 border border-slate-800 p-4 rounded-2xl shadow-sm flex flex-col md:flex-row gap-3 justify-between items-center">
+            
+            <!-- Realtime Search Input -->
+            <div class="relative w-full md:w-80">
+                <i class="fa-solid fa-magnifying-glass absolute left-3.5 top-3 text-slate-400 text-sm"></i>
+                <input type="text" id="searchInput" oninput="filterTable()" placeholder="Search name, stone, SKU..." 
+                       class="w-full pl-10 pr-4 py-2 bg-slate-950 border border-slate-800 rounded-xl text-sm text-slate-200 placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-indigo-500/50 focus:border-indigo-500 transition-all">
+            </div>
+
+            <!-- Category & Color Filters -->
+            <div class="flex flex-wrap gap-2.5 w-full md:w-auto items-center">
+                
+                <!-- Stone Type Select -->
+                <select id="filterType" onchange="filterTable()" class="bg-slate-950 border border-slate-800 text-slate-300 text-xs rounded-xl px-3 py-2.5 focus:outline-none focus:ring-2 focus:ring-indigo-500/50">
+                    <option value="">All Stone Types</option>
+                    <option value="Amethyst">Amethyst</option>
+                    <option value="Clear Quartz">Clear Quartz</option>
+                    <option value="Rose Quartz">Rose Quartz</option>
+                    <option value="Jade">Jade</option>
+                    <option value="Obsidian">Obsidian</option>
+                    <option value="Moonstone">Moonstone</option>
+                    <option value="Agate">Agate</option>
+
+                    <option value="Fluorite">Fluorite</option>
+                    <option value="Citrine">Citrine</option>
+                    <option value="Labradorite">Labradorite</option>
+                    <option value="Moss Agate">Moss Agate</option>
+                </select>
+
+                <!-- Color Select -->
+                <select id="filterColor" onchange="filterTable()" class="bg-slate-950 border border-slate-800 text-slate-300 text-xs rounded-xl px-3 py-2.5 focus:outline-none focus:ring-2 focus:ring-indigo-500/50">
+                    <option value="">All Colors</option>
+                    <option value="Purple">Purple</option>
+                    <option value="Clear">Clear</option>
+                    <option value="Green">Green</option>
+                    <option value="Black">Black</option>
+                    <option value="Pink">Pink</option>
+                    <option value="Iridescent">Iridescent</option>
+                    <option value="Yellow">Yellow</option>
+                    <option value="Multi">Multi</option>
+                </select>
+
+                <!-- Low Stock Toggle -->
+                <button id="toggleLowStockBtn" onclick="toggleLowStockFilter()" class="bg-slate-950 border border-slate-800 text-slate-300 hover:text-white px-3 py-2 rounded-xl text-xs flex items-center gap-1.5 transition-all">
+                    <i class="fa-solid fa-filter text-amber-400"></i> Low Stock Only
+                </button>
+
+                <!-- Reset Filters -->
+                <button onclick="resetFilters()" class="text-xs text-slate-400 hover:text-indigo-400 px-2 py-2 flex items-center gap-1 transition-colors">
+                    <i class="fa-solid fa-rotate-left"></i> Reset
+                </button>
+            </div>
+        </div>
+
+        <!-- Crystal Inventory Table -->
+        <div class="bg-slate-900/80 border border-slate-800 rounded-2xl shadow-sm overflow-hidden">
+            <div class="overflow-x-auto">
+                <table class="w-full text-left text-sm text-slate-300">
+                    <thead class="bg-slate-950/80 text-slate-400 text-xs uppercase font-semibold border-b border-slate-800 tracking-wider">
+                        <tr>
+                            <th class="px-5 py-4">SKU / Item</th>
+                            <th class="px-5 py-4">Stone Type</th>
+                            <th class="px-5 py-4">Size & Specs</th>
+                            <th class="px-5 py-4">Color</th>
+                            <th class="px-5 py-4 text-center">In Stock</th>
+                            <th class="px-5 py-4 text-right">Price</th>
+                            <th class="px-5 py-4 text-right">Subtotal</th>
+                            <th class="px-5 py-4 text-right">Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody id="inventoryTable" class="divide-y divide-slate-800/60">
+                        <!-- Dynamic JS Rows Populated Here -->
+                    </tbody>
+                </table>
+            </div>
+
+            <!-- Empty State -->
+            <div id="emptyState" class="hidden p-12 text-center">
+                <div class="w-16 h-16 bg-slate-800/80 text-slate-500 rounded-2xl flex items-center justify-center mx-auto mb-4 border border-slate-700/50">
+                    <i class="fa-solid fa-gem text-2xl"></i>
+                </div>
+                <h3 class="text-lg font-bold text-slate-200">No crystals found</h3>
+                <p class="text-slate-400 text-sm mt-1 max-w-sm mx-auto">Try adjusting your search query, clearing filters, or adding a new item to your collection.</p>
+                <button onclick="resetFilters()" class="mt-4 bg-indigo-600/20 text-indigo-400 hover:bg-indigo-600/30 font-medium px-4 py-2 rounded-xl text-xs transition-all border border-indigo-500/30">
+                    Reset All Filters
+                </button>
+            </div>
+        </div>
+    </main>
+
+    <!-- Add / Edit Crystal Modal -->
+    <div id="itemModal" class="fixed inset-0 bg-slate-950/80 backdrop-blur-md hidden z-50 flex justify-center items-center p-4 overflow-y-auto">
+        <div class="bg-slate-900 border border-slate-800 rounded-3xl shadow-2xl w-full max-w-lg overflow-hidden my-8">
+            
+            <!-- Modal Header -->
+            <div class="px-6 py-4 border-b border-slate-800 flex justify-between items-center bg-slate-950/50">
+                <div class="flex items-center space-x-2.5">
+                    <div class="bg-indigo-500/10 text-indigo-400 p-2 rounded-xl border border-indigo-500/20">
+                        <i class="fa-solid fa-pen-to-square"></i>
+                    </div>
+                    <h3 id="modalTitle" class="font-bold text-white text-base">Add New Crystal</h3>
+                </div>
+                <button onclick="closeModal()" class="text-slate-400 hover:text-slate-200 p-1.5 rounded-lg hover:bg-slate-800 transition-colors">
+                    <i class="fa-solid fa-xmark text-lg"></i>
+                </button>
+            </div>
+            
+            <!-- Form Body -->
+            <form id="crystalForm" onsubmit="handleFormSubmit(event)" class="p-6 space-y-4">
+                <input type="hidden" id="editId" value="">
+                
+                <!-- SKU & Name -->
+                <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                    <div>
+                        <label class="block text-xs font-semibold uppercase text-slate-400 mb-1">SKU / Code</label>
+                        <input type="text" id="inputSku" required placeholder="LHS-001" 
+                               class="w-full px-3 py-2 bg-slate-950 border border-slate-800 rounded-xl text-sm text-slate-100 placeholder-slate-600 focus:outline-none focus:ring-2 focus:ring-indigo-500">
+                    </div>
+                    <div class="sm:col-span-2">
+                        <label class="block text-xs font-semibold uppercase text-slate-400 mb-1">Item Name</label>
+                        <input type="text" id="inputName" required placeholder="e.g. Celestial Aura Sphere" 
+                               class="w-full px-3 py-2 bg-slate-950 border border-slate-800 rounded-xl text-sm text-slate-100 placeholder-slate-600 focus:outline-none focus:ring-2 focus:ring-indigo-500">
+                    </div>
+                </div>
+
+                <!-- Stone Type & Size -->
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                    <div>
+                        <label class="block text-xs font-semibold uppercase text-slate-400 mb-1">Stone Type</label>
+                        <input type="text" id="inputType" required placeholder="e.g. Amethyst" list="stoneTypesList"
+                               class="w-full px-3 py-2 bg-slate-950 border border-slate-800 rounded-xl text-sm text-slate-100 placeholder-slate-600 focus:outline-none focus:ring-2 focus:ring-indigo-500">
+                        <datalist id="stoneTypesList">
+                            <option value="Amethyst">
+                            <option value="Clear Quartz">
+                            <option value="Rose Quartz">
+                            <option value="Jade">
+                            <option value="Black Obsidian">
+                            <option value="Moonstone">
+                            <option value="Fluorite">
+                            <option value="Labradorite">
+                            <option value="Moss Agate">
+                            <option value="Citrine">
+                        </datalist>
+                    </div>
+                    <div>
+                        <label class="block text-xs font-semibold uppercase text-slate-400 mb-1">Size Category</label>
+                        <select id="inputSize" required class="w-full px-3 py-2 bg-slate-950 border border-slate-800 rounded-xl text-sm text-slate-100 focus:outline-none focus:ring-2 focus:ring-indigo-500">
+                            <option value="Mini">Mini</option>
+                            <option value="Small">Small</option>
+                            <option value="Medium" selected>Medium</option>
+                            <option value="Large">Large</option>
+                            <option value="XL / Tower">XL / Tower</option>
+                            <option value="Master Piece">Master Piece</option>
+                        </select>
+                    </div>
+                </div>
+
+                <!-- Specs & Color -->
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                    <div>
+                        <label class="block text-xs font-semibold uppercase text-slate-400 mb-1">Dimensions / Specs</label>
+                        <input type="text" id="inputDiameter" required placeholder="e.g. 55 mm or 8mm beads" 
+                               class="w-full px-3 py-2 bg-slate-950 border border-slate-800 rounded-xl text-sm text-slate-100 placeholder-slate-600 focus:outline-none focus:ring-2 focus:ring-indigo-500">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-semibold uppercase text-slate-400 mb-1">Primary Color</label>
+                        <input type="text" id="inputColor" required placeholder="e.g. Deep Purple" 
+                               class="w-full px-3 py-2 bg-slate-950 border border-slate-800 rounded-xl text-sm text-slate-100 placeholder-slate-600 focus:outline-none focus:ring-2 focus:ring-indigo-500">
+                    </div>
+                </div>
+
+                <!-- Quantity & Unit Price -->
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                    <div>
+                        <label class="block text-xs font-semibold uppercase text-slate-400 mb-1">In-Stock Quantity</label>
+                        <input type="number" id="inputQuantity" min="0" required placeholder="10" 
+                               class="w-full px-3 py-2 bg-slate-950 border border-slate-800 rounded-xl text-sm text-slate-100 placeholder-slate-600 focus:outline-none focus:ring-2 focus:ring-indigo-500">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-semibold uppercase text-slate-400 mb-1">Unit Price ($ USD)</label>
+                        <input type="number" step="0.01" min="0" id="inputPrice" required placeholder="29.99" 
+                               class="w-full px-3 py-2 bg-slate-950 border border-slate-800 rounded-xl text-sm text-slate-100 placeholder-slate-600 focus:outline-none focus:ring-2 focus:ring-indigo-500">
+                    </div>
+                </div>
+
+                <!-- Footer Action -->
+                <div class="pt-4 flex justify-end gap-3 border-t border-slate-800">
+                    <button type="button" onclick="closeModal()" class="px-4 py-2 text-xs text-slate-400 hover:text-white rounded-xl font-semibold hover:bg-slate-800 transition-all">Cancel</button>
+                    <button type="submit" class="px-5 py-2 text-xs bg-indigo-600 hover:bg-indigo-500 text-white rounded-xl font-bold shadow-lg shadow-indigo-600/30 transition-all">Save Record</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Notification Toast Container -->
+    <div id="toastContainer" class="fixed bottom-5 right-5 z-50 flex flex-col gap-2"></div>
+
+    <!-- JavaScript Application Logic -->
+    <script>
+        const STORAGE_KEY = 'lhastral_crystal_inventory_db';
+
+        // Default seed data for brand initial launch
+        const defaultCrystals = [
+            { id: '1', sku: 'LHS-001', name: 'Astra Aura Sphere', type: 'Amethyst', size: 'Medium', diameter: '60 mm', color: 'Purple', quantity: 12, price: 48.00 },
+            { id: '2', sku: 'LHS-002', name: 'Paxila Pillar Generator', type: 'Clear Quartz', size: 'XL / Tower', diameter: '120 x 35 mm', color: 'Clear', quantity: 2, price: 85.00 },
+            { id: '3', sku: 'LHS-003', name: 'Sylvan Heart Carving', type: 'Jade', size: 'Small', diameter: '40 mm', color: 'Green', quantity: 18, price: 24.50 },
+            { id: '4', sku: 'LHS-004', name: 'Zhide Protection Shield', type: 'Obsidian', size: 'Large', diameter: '80 mm', color: 'Black', quantity: 1, price: 39.00 },
+            { id: '5', sku: 'LHS-005', name: 'Eirene Harmony Palm Stone', type: 'Rose Quartz', size: 'Small', diameter: '45 mm', color: 'Pink', quantity: 15, price: 18.00 },
+            { id: '6', sku: 'LHS-006', name: 'Norba Celestial Specimen', type: 'Moonstone', size: 'Medium', diameter: '50 mm', color: 'Iridescent', quantity: 5, price: 62.00 },
+            { id: '7', sku: 'LHS-007', name: 'Verdant Earth Sphere', type: 'Moss Agate', size: 'Medium', diameter: '65 mm', color: 'Green', quantity: 3, price: 42.00 },
+            { id: '8', sku: 'LHS-008', name: 'Solaris Abundance Cluster', type: 'Citrine', size: 'Large', diameter: '90 mm', color: 'Yellow', quantity: 7, price: 74.00 }
+        ];
+
+        let crystalData = [];
+        let showLowStockOnly = false;
+
+        // Initialize Application State
+        function initApp() {
+            const savedData = localStorage.getItem(STORAGE_KEY);
+            if (savedData) {
+                try {
+                    crystalData = JSON.parse(savedData);
+                } catch (e) {
+                    console.error('Failed to parse localStorage data:', e);
+                    crystalData = defaultCrystals;
+                    saveToLocalStorage();
+                }
+            } else {
+                crystalData = defaultCrystals;
+                saveToLocalStorage();
+            }
+            filterTable();
+        }
+
+        // Save current memory state to Browser LocalStorage
+        function saveToLocalStorage() {
+            localStorage.setItem(STORAGE_KEY, JSON.stringify(crystalData));
+            updateMetrics();
+        }
+
+        // Render Inventory Table Rows
+        function renderTable(items) {
+            const tbody = document.getElementById('inventoryTable');
+            const emptyState = document.getElementById('emptyState');
+            
+            updateMetrics();
+
+            if (items.length === 0) {
+                tbody.innerHTML = '';
+                emptyState.classList.remove('hidden');
+                return;
+            }
+
+            emptyState.classList.add('hidden');
+            tbody.innerHTML = items.map(item => {
+                const isLowStock = item.quantity <= 3;
+                const subtotal = (item.quantity * item.price).toFixed(2);
+                
+                return `
+                <tr class="hover:bg-slate-900/40 transition-colors group">
+                    <td class="px-5 py-4">
+                        <div class="font-bold text-slate-100">${escapeHtml(item.name)}</div>
+                        <div class="text-xs text-indigo-400/80 font-mono mt-0.5">${escapeHtml(item.sku)}</div>
+                    </td>
+                    <td class="px-5 py-4 text-slate-300 font-medium">
+                        ${escapeHtml(item.type)}
+                    </td>
+                    <td class="px-5 py-4">
+                        <div class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-semibold bg-slate-800 text-slate-300 border border-slate-700/60 mb-1">
+                            ${escapeHtml(item.size)}
+                        </div>
+                        <div class="text-xs text-slate-400">${escapeHtml(item.diameter)}</div>
+                    </td>
+                    <td class="px-5 py-4">
+                        <span class="inline-flex items-center gap-1.5 text-slate-300">
+                            <span class="w-2.5 h-2.5 rounded-full ring-1 ring-white/20" style="background-color: ${getColorHex(item.color)}"></span>
+                            ${escapeHtml(item.color)}
+                        </span>
+                    </td>
+                    <td class="px-5 py-4 text-center">
+                        <div class="inline-flex items-center justify-center gap-1.5">
+                            <button onclick="adjustQuantity('${item.id}', -1)" class="w-6 h-6 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-300 flex items-center justify-center text-xs transition-colors">
+                                <i class="fa-solid fa-minus"></i>
+                            </button>
+                            <span class="w-10 text-center font-bold text-sm ${isLowStock ? 'text-amber-400 font-black' : 'text-slate-100'}">
+                                ${item.quantity}
+                            </span>
+                            <button onclick="adjustQuantity('${item.id}', 1)" class="w-6 h-6 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-300 flex items-center justify-center text-xs transition-colors">
+                                <i class="fa-solid fa-plus"></i>
+                            </button>
+                        </div>
+                        ${isLowStock ? '<div class="text-[10px] text-amber-400 font-semibold mt-1"><i class="fa-solid fa-triangle-exclamation"></i> Low Stock</div>' : ''}
+                    </td>
+                    <td class="px-5 py-4 text-right font-mono text-slate-300">
+                        $${item.price.toFixed(2)}
+                    </td>
+                    <td class="px-5 py-4 text-right font-mono font-semibold text-emerald-400">
+                        $${subtotal}
+                    </td>
+                    <td class="px-5 py-4 text-right space-x-1.5">
+                        <button onclick="editItem('${item.id}')" title="Edit Item" class="p-2 text-slate-400 hover:text-indigo-400 hover:bg-indigo-500/10 rounded-lg transition-colors">
+                            <i class="fa-solid fa-pen-to-square"></i>
+                        </button>
+                        <button onclick="deleteItem('${item.id}')" title="Delete Item" class="p-2 text-slate-400 hover:text-rose-400 hover:bg-rose-500/10 rounded-lg transition-colors">
+                            <i class="fa-solid fa-trash-can"></i>
+                        </button>
+                    </td>
+                </tr>
+            `}).join('');
+        }
+
+        // Realtime Data Filter Logic
+        function filterTable() {
+            const searchVal = document.getElementById('searchInput').value.toLowerCase().trim();
+            const typeVal = document.getElementById('filterType').value.toLowerCase();
+            const colorVal = document.getElementById('filterColor').value.toLowerCase();
+
+            const filtered = crystalData.filter(item => {
+                const matchesSearch = item.name.toLowerCase().includes(searchVal) || 
+                                      item.type.toLowerCase().includes(searchVal) || 
+                                      item.sku.toLowerCase().includes(searchVal) ||
+                                      item.color.toLowerCase().includes(searchVal);
+                
+                const matchesType = !typeVal || item.type.toLowerCase().includes(typeVal);
+                const matchesColor = !colorVal || item.color.toLowerCase().includes(colorVal);
+                const matchesLowStock = !showLowStockOnly || item.quantity <= 3;
+
+                return matchesSearch && matchesType && matchesColor && matchesLowStock;
+            });
+
+            renderTable(filtered);
+        }
+
+        function toggleLowStockFilter() {
+            showLowStockOnly = !showLowStockOnly;
+            const btn = document.getElementById('toggleLowStockBtn');
+            if (showLowStockOnly) {
+                btn.classList.add('bg-amber-500/20', 'border-amber-500/40', 'text-amber-300');
+            } else {
+                btn.classList.remove('bg-amber-500/20', 'border-amber-500/40', 'text-amber-300');
+            }
+            filterTable();
+        }
+
+        function resetFilters() {
+            document.getElementById('searchInput').value = '';
+            document.getElementById('filterType').value = '';
+            document.getElementById('filterColor').value = '';
+            showLowStockOnly = false;
+            const btn = document.getElementById('toggleLowStockBtn');
+            btn.classList.remove('bg-amber-500/20', 'border-amber-500/40', 'text-amber-300');
+            filterTable();
+        }
+
+        // Metrics Calculation Engine
+        function updateMetrics() {
+            const totalSkus = crystalData.length;
+            const totalStock = crystalData.reduce((acc, curr) => acc + Number(curr.quantity), 0);
+            const totalVal = crystalData.reduce((acc, curr) => acc + (Number(curr.quantity) * Number(curr.price)), 0);
+            const lowStockCount = crystalData.filter(item => item.quantity <= 3).length;
+
+            document.getElementById('metric-skus').innerText = totalSkus;
+            document.getElementById('metric-total-stock').innerText = totalStock;
+            document.getElementById('metric-total-value').innerText = '$' + totalVal.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+            document.getElementById('metric-low-stock').innerText = lowStockCount;
+        }
+
+        // Adjust Stock Quantity +/-
+        function adjustQuantity(id, delta) {
+            const item = crystalData.find(i => i.id === id);
+            if (item) {
+                item.quantity = Math.max(0, item.quantity + delta);
+                saveToLocalStorage();
+                filterTable();
+            }
+        }
+
+        // Modal Control
+        function openAddModal() {
+            document.getElementById('modalTitle').innerText = 'Add New Crystal Item';
+            document.getElementById('editId').value = '';
+            document.getElementById('crystalForm').reset();
+            // Generate auto SKU
+            document.getElementById('inputSku').value = 'LHS-' + String(crystalData.length + 1).padStart(3, '0');
+            document.getElementById('itemModal').classList.remove('hidden');
+        }
+
+        function closeModal() {
+            document.getElementById('itemModal').classList.add('hidden');
+        }
+
+        function handleFormSubmit(e) {
+            e.preventDefault();
+            const editId = document.getElementById('editId').value;
+            
+            const newItem = {
+                id: editId || Date.now().toString(),
+                sku: document.getElementById('inputSku').value.trim(),
+                name: document.getElementById('inputName').value.trim(),
+                type: document.getElementById('inputType').value.trim(),
+                size: document.getElementById('inputSize').value,
+                diameter: document.getElementById('inputDiameter').value.trim(),
+                color: document.getElementById('inputColor').value.trim(),
+                quantity: parseInt(document.getElementById('inputQuantity').value) || 0,
+                price: parseFloat(document.getElementById('inputPrice').value) || 0.00
+            };
+
+            if (editId) {
+                const idx = crystalData.findIndex(i => i.id === editId);
+                if (idx !== -1) crystalData[idx] = newItem;
+                showToast('Crystal record updated successfully');
+            } else {
+                crystalData.push(newItem);
+                showToast('New crystal added to collection');
+            }
+
+            saveToLocalStorage();
+            closeModal();
+            filterTable();
+        }
+
+        function editItem(id) {
+            const item = crystalData.find(i => i.id === id);
+            if (!item) return;
+
+            document.getElementById('modalTitle').innerText = 'Edit Crystal Item';
+            document.getElementById('editId').value = item.id;
+            document.getElementById('inputSku').value = item.sku;
+            document.getElementById('inputName').value = item.name;
+            document.getElementById('inputType').value = item.type;
+            document.getElementById('inputSize').value = item.size;
+            document.getElementById('inputDiameter').value = item.diameter;
+            document.getElementById('inputColor').value = item.color;
+            document.getElementById('inputQuantity').value = item.quantity;
+            document.getElementById('inputPrice').value = item.price;
+            
+            document.getElementById('itemModal').classList.remove('hidden');
+        }
+
+        function deleteItem(id) {
+            const item = crystalData.find(i => i.id === id);
+            if (item && confirm(`Are you sure you want to delete "${item.name}" from inventory?`)) {
+                crystalData = crystalData.filter(i => i.id !== id);
+                saveToLocalStorage();
+                filterTable();
+                showToast('Item deleted from inventory', 'error');
+            }
+        }
+
+        // Data Export Options
+        function exportJSON() {
+            const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(crystalData, null, 2));
+            const dlAnchor = document.createElement('a');
+            dlAnchor.setAttribute("href", dataStr);
+            dlAnchor.setAttribute("download", `lhastral_inventory_${new Date().toISOString().slice(0,10)}.json`);
+            document.body.appendChild(dlAnchor);
+            dlAnchor.click();
+            dlAnchor.remove();
+            showToast('JSON Backup downloaded');
+        }
+
+        function exportCSV() {
+            const headers = ["SKU", "Item Name", "Stone Type", "Size", "Dimensions", "Color", "Quantity", "Unit Price ($)"];
+            const rows = crystalData.map(i => [
+                `"${i.sku}"`,
+                `"${i.name}"`,
+                `"${i.type}"`,
+                `"${i.size}"`,
+                `"${i.diameter}"`,
+                `"${i.color}"`,
+                i.quantity,
+                i.price
+            ]);
+
+            const csvContent = "data:text/csv;charset=utf-8," + [headers.join(","), ...rows.map(e => e.join(","))].join("\n");
+            const encodedUri = encodeURI(csvContent);
+            const link = document.createElement("a");
+            link.setAttribute("href", encodedUri);
+            link.setAttribute("download", `lhastral_inventory_${new Date().toISOString().slice(0,10)}.csv`);
+            document.body.appendChild(link);
+            link.click();
+            link.remove();
+            showToast('CSV Export downloaded');
+        }
+
+        function importJSON(event) {
+            const file = event.target.files[0];
+            if (!file) return;
+
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                try {
+                    const importedData = JSON.parse(e.target.result);
+                    if (Array.isArray(importedData)) {
+                        crystalData = importedData;
+                        saveToLocalStorage();
+                        filterTable();
+                        showToast('Inventory imported successfully!');
+                    } else {
+                        alert('Invalid file format. Please upload a valid JSON array.');
+                    }
+                } catch (err) {
+                    alert('Failed to parse JSON file.');
+                }
+            };
+            reader.readAsText(file);
+            event.target.value = '';
+        }
+
+        // Helper Color Code Resolver
+        function getColorHex(colorName) {
+            const colors = {
+                'purple': '#a855f7',
+                'clear': '#f8fafc',
+                'green': '#22c55e',
+                'black': '#334155',
+                'pink': '#f472b6',
+                'iridescent': '#c084fc',
+                'yellow': '#eab308',
+                'multi': '#38bdf8'
+            };
+            return colors[colorName.toLowerCase()] || '#94a3b8';
+        }
+
+        function escapeHtml(str) {
+            if (!str) return '';
+            return String(str).replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;");
+        }
+
+        // System Toast Notifications
+        function showToast(msg, type = 'success') {
+            const container = document.getElementById('toastContainer');
+            const toast = document.createElement('div');
+            const isError = type === 'error';
+            toast.className = `px-4 py-3 rounded-xl shadow-xl text-xs font-semibold border flex items-center gap-2 transition-all transform translate-y-2 opacity-0 ${
+                isError ? 'bg-rose-950 border-rose-800 text-rose-200' : 'bg-slate-900 border-indigo-500/40 text-slate-100'
+            }`;
+            toast.innerHTML = `<i class="${isError ? 'fa-solid fa-circle-xmark text-rose-400' : 'fa-solid fa-circle-check text-emerald-400'}"></i> ${msg}`;
+            container.appendChild(toast);
+
+            setTimeout(() => {
+                toast.classList.remove('translate-y-2', 'opacity-0');
+            }, 10);
+
+            setTimeout(() => {
+                toast.classList.add('opacity-0', 'translate-y-2');
+                setTimeout(() => toast.remove(), 300);
+            }, 2500);
+        }
+
+        // Run application on load
+        window.addEventListener('DOMContentLoaded', initApp);
+    </script>
+</body>
+</html>
